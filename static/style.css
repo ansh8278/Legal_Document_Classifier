@@ -1,23 +1,60 @@
+/* ======================================================
+   GLOBAL THEME — AI Dark Glassmorphism
+   ====================================================== */
+
 body {
     background: radial-gradient(circle at top, #0d1b2a, #000);
     color: #fff;
     font-family: 'Poppins', sans-serif;
     overflow-x: hidden;
+    margin: 0;
+    padding: 0;
 }
+
+
+/* ======================================================
+   TEXT & TITLES
+   ====================================================== */
 
 .text-gradient {
     background: linear-gradient(45deg, #00d4ff, #0078ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    font-weight: 700;
+    letter-spacing: 1px;
 }
+
+h4,
+h5 {
+    font-weight: 600;
+}
+
+
+/* ======================================================
+   TEXTAREA
+   ====================================================== */
 
 textarea {
     background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid #333;
+    border: 1px solid rgba(0, 200, 255, 0.2);
     color: #fff;
     font-size: 1rem;
     resize: none;
+    border-radius: 10px;
+    padding: 10px;
+    transition: 0.3s;
 }
+
+textarea:focus {
+    outline: none;
+    box-shadow: 0 0 10px rgba(0, 200, 255, 0.6);
+    border-color: #00d4ff;
+}
+
+
+/* ======================================================
+   CARD STYLES
+   ====================================================== */
 
 .glass-card {
     background: rgba(255, 255, 255, 0.05);
@@ -28,22 +65,7 @@ textarea {
 
 .glass-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0px 0px 20px rgba(0, 140, 255, 0.2);
-}
-
-.glow-btn {
-    box-shadow: 0px 0px 10px rgba(0, 200, 255, 0.4);
-    transition: 0.3s;
-}
-
-.glow-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0px 0px 20px rgba(0, 200, 255, 0.7);
-}
-
-.fade-in {
-    display: none;
-    animation: fadeIn 1s ease-in-out forwards;
+    box-shadow: 0px 0px 20px rgba(0, 140, 255, 0.25);
 }
 
 .info-card {
@@ -55,8 +77,40 @@ textarea {
 }
 
 .info-card:hover {
-    background: rgba(0, 140, 255, 0.1);
-    transform: scale(1.02);
+    background: rgba(0, 140, 255, 0.12);
+    transform: scale(1.03);
+}
+
+
+/* ======================================================
+   BUTTONS
+   ====================================================== */
+
+.glow-btn {
+    box-shadow: 0px 0px 10px rgba(0, 200, 255, 0.4);
+    transition: all 0.3s ease;
+}
+
+.glow-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 0px 25px rgba(0, 200, 255, 0.8);
+}
+
+.btn-outline-light:hover {
+    background-color: #00b4ff;
+    border-color: #00b4ff;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(0, 180, 255, 0.6);
+}
+
+
+/* ======================================================
+   OUTPUT SECTION
+   ====================================================== */
+
+.fade-in {
+    display: none;
+    animation: fadeIn 1s ease-in-out forwards;
 }
 
 mark {
@@ -64,7 +118,70 @@ mark {
     color: #000;
     border-radius: 4px;
     padding: 0 4px;
+    font-weight: 600;
 }
+
+
+/* ======================================================
+   QUESTION ANSWERING SECTION
+   ====================================================== */
+
+#questionInput {
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(0, 180, 255, 0.3);
+    color: #fff;
+    padding: 0.8rem;
+    border-radius: 8px 0 0 8px;
+}
+
+#questionInput::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+#questionInput:focus {
+    outline: none;
+    box-shadow: 0 0 10px rgba(0, 200, 255, 0.7);
+    border-color: #00d4ff;
+}
+
+#askBtn {
+    background: linear-gradient(45deg, #00d4ff, #0078ff);
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 0 8px 8px 0;
+    transition: all 0.3s ease;
+}
+
+#askBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0, 200, 255, 0.7);
+}
+
+#qaAnswer {
+    margin-top: 15px;
+    padding: 1rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 1.1rem;
+    border-left: 4px solid #00d4ff;
+    animation: fadeInUp 0.8s ease-in-out;
+}
+
+
+/* ======================================================
+   FOOTER
+   ====================================================== */
+
+footer {
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+
+/* ======================================================
+   ANIMATIONS
+   ====================================================== */
 
 @keyframes fadeIn {
     from {
@@ -75,4 +192,33 @@ mark {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* ======================================================
+   SCROLLBAR (Sleek Custom Look)
+   ====================================================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #00b4ff, #0044ff);
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #00e5ff, #005aff);
 }

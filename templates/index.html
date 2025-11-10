@@ -16,7 +16,7 @@
         <!-- Header -->
         <div class="text-center mb-5">
             <h1 class="display-5 fw-bold text-gradient">⚖️ Legal Document Classifier</h1>
-            <p class="lead text-secondary">Your AI-powered assistant for simplifying complex legal documents</p>
+            <p class="lead text-secondary">Your AI-powered assistant for simplifying and understanding legal documents</p>
             <hr class="border-secondary w-50 mx-auto">
         </div>
 
@@ -29,11 +29,11 @@
                 <textarea id="inputText" class="form-control mb-3" rows="7" placeholder="Paste your legal document here..."></textarea>
                 <div class="d-flex justify-content-between">
                     <button id="simplifyBtn" class="btn btn-primary btn-lg px-4 glow-btn">
-                        <i class="fa-solid fa-wand-magic-sparkles me-2"></i> Simplify Document
-                    </button>
+            <i class="fa-solid fa-wand-magic-sparkles me-2"></i> Simplify Document
+          </button>
                     <button id="clearBtn" class="btn btn-outline-light btn-lg">
-                        <i class="fa-solid fa-trash-can me-2"></i> Clear
-                    </button>
+            <i class="fa-solid fa-trash-can me-2"></i> Clear
+          </button>
                 </div>
             </div>
         </div>
@@ -70,6 +70,18 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Question Answering Section -->
+            <div class="card bg-secondary bg-opacity-25 border-0 shadow-sm p-4 mt-4">
+                <h4 class="text-success mb-3"><i class="fa-solid fa-comments me-2"></i>Ask a Question About This Document</h4>
+                <div class="input-group mb-3">
+                    <input type="text" id="questionInput" class="form-control" placeholder="e.g., What is the termination clause?">
+                    <button id="askBtn" class="btn btn-success">
+            <i class="fa-solid fa-magnifying-glass me-1"></i> Ask
+          </button>
+                </div>
+                <p id="qaAnswer" class="fs-5 text-light"></p>
+            </div>
         </div>
 
         <!-- Footer -->
@@ -82,6 +94,7 @@
         const simplifyBtn = document.getElementById('simplifyBtn');
         const clearBtn = document.getElementById('clearBtn');
 
+        // Simplify Document
         simplifyBtn.addEventListener('click', async() => {
             const text = document.getElementById('inputText').value.trim();
             if (!text) {
@@ -118,8 +131,6 @@
                 document.getElementById('highlighted').innerHTML = result.highlighted;
                 document.getElementById('keywords').innerText = result.keywords.join(', ');
                 document.getElementById('readability').innerText = result.readability;
-
-                // ✅ Show only document type (no undefined %)
                 document.getElementById('doctype').innerText = result.doc_type;
 
                 document.getElementById('outputContainer').style.display = 'block';
@@ -130,6 +141,7 @@
             }
         });
 
+        // Clear Button
         clearBtn.addEventListener('click', () => {
             document.getElementById('inputText').value = '';
             document.getElementById('summary').innerText = '';
@@ -137,7 +149,51 @@
             document.getElementById('keywords').innerText = '';
             document.getElementById('readability').innerText = '';
             document.getElementById('doctype').innerText = '';
+            document.getElementById('qaAnswer').innerText = '';
+            document.getElementById('questionInput').value = '';
             document.getElementById('outputContainer').style.display = 'none';
+        });
+
+        // Question Answering Feature (No Confidence)
+        document.getElementById('askBtn').addEventListener('click', async() => {
+            const text = document.getElementById('inputText').value.trim();
+            const question = document.getElementById('questionInput').value.trim();
+            const answerBox = document.getElementById('qaAnswer');
+
+            if (!text || !question) {
+                alert("Please enter both a document and a question.");
+                return;
+            }
+
+            answerBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Thinking...';
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text,
+                        question
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    answerBox.innerHTML = `<span class="text-danger">${data.error}</span>`;
+                    return;
+                }
+
+                // ✅ Display only Question & Answer (No Confidence)
+                answerBox.innerHTML = `
+          <strong>Q:</strong> ${data.question}<br>
+          <strong>Answer:</strong> ${data.answer}
+        `;
+            } catch (err) {
+                answerBox.innerHTML = `<span class="text-danger">Error fetching answer. Try again.</span>`;
+            }
         });
     </script>
 </body>

@@ -7,28 +7,45 @@ import re
 app = Flask(__name__)
 
 # =========================================
-# Configure Safe Device for M1
+# Configure Device (Auto-detect MPS for Mac)
 # =========================================
-device = -1  # Force CPU for Apple Silicon stability
-print("✅ Running on CPU mode (optimized for Mac M1/M2).")
+if torch.backends.mps.is_available():
+    device = 0  # Use Apple Metal GPU
+    print("✅ Running on MPS (Apple Silicon GPU).")
+else:
+    device = -1  # CPU fallback
+    print("✅ Running on CPU mode (safe for Mac M1/M2).")
 
 # =========================================
-# Load Lightweight NLP Models
+# Load NLP Pipelines
 # =========================================
+print("🔄 Loading NLP models... please wait...")
+
+# Summarizer
 summarizer = pipeline("summarization", model="t5-small", device=device)
 
+# Classifier
 classifier = pipeline(
     "zero-shot-classification",
-    model="valhalla/distilbart-mnli-12-1",  # lightweight and stable for macOS
+    model="valhalla/distilbart-mnli-12-1",
     device=device
 )
 
+# Question-Answering model
+qa_pipeline = pipeline(
+    "question-answering",
+    model="deepset/roberta-base-squad2",
+    device=device
+)
+
+print("✅ Models loaded successfully!")
+
 # =========================================
-# Helper Function: Document Classification
+# Helper: Document Classification
 # =========================================
 def classify_document(text):
     cleaned = re.sub(r'\s+', ' ', text)
-    cleaned = cleaned[:1500]  # avoid overloading the model with long text
+    cleaned = cleaned[:1500]
 
     labels = [
         "legal agreement",
@@ -42,12 +59,11 @@ def classify_document(text):
         "service level agreement",
         "memorandum of understanding"
     ]
-    
-    # AI-based zero-shot classification
+
     classification = classifier(cleaned, candidate_labels=labels, multi_label=False)
     doc_type = classification["labels"][0]
 
-    # 🔹 Rule-based refinement for more accuracy
+    # Rule-based refinement
     lower_text = text.lower()
     if any(k in lower_text for k in ["court", "judge", "tribunal", "case number"]):
         doc_type = "court judgment"
@@ -62,15 +78,20 @@ def classify_document(text):
     elif any(k in lower_text for k in ["terms", "conditions", "usage", "agreement of service"]):
         doc_type = "terms and conditions"
 
-    return doc_type  # ✅ only returning document type (no confidence)
+    return doc_type
+
 
 # =========================================
-# Flask Routes
+# ROUTE 1: Home Page
 # =========================================
 @app.route('/')
 def index():
     return render_template('index.html')
 
+
+# =========================================
+# ROUTE 2: Simplify Document
+# =========================================
 @app.route('/simplify', methods=['POST'])
 def simplify():
     data = request.get_json()
@@ -80,20 +101,19 @@ def simplify():
         return jsonify({"error": "Please enter some text."}), 400
 
     try:
-        # 🔹 Summarization
+        # Summarize document
         max_len = min(120, len(text) // 2)
         result = summarizer(text, max_length=max_len, min_length=20, do_sample=False)
         summary = result[0]['summary_text']
 
-        # 🔹 Keyword Extraction and Readability
+        # Extract keywords, readability, and highlight
         keywords = extract_keywords(text)
         readability = calculate_readability(summary)
         highlighted = highlight_keywords(summary, keywords)
 
-        # 🔹 Document Classification (without accuracy)
+        # Document classification
         doc_type = classify_document(text)
 
-        # 🔹 JSON Response
         return jsonify({
             "summary": summary,
             "highlighted": highlighted,
@@ -105,6 +125,35 @@ def simplify():
     except Exception as e:
         print("❌ Error:", e)
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+
+# =========================================
+# ROUTE 3: Question Answering Feature
+# =========================================
+@app.route('/ask', methods=['POST'])
+def ask_question():
+    """Answer user’s natural-language questions from document text."""
+    data = request.get_json()
+    text = data.get('text', '').strip()
+    question = data.get('question', '').strip()
+
+    if not text or not question:
+        return jsonify({"error": "Please provide both document text and a question."}), 400
+
+    try:
+        # Run the QA model
+        answer = qa_pipeline(question=question, context=text)
+
+        return jsonify({
+            "question": question,
+            "answer": answer.get("answer", "No answer found."),
+            "confidence": round(answer.get("score", 0.0) * 100, 2)
+        })
+
+    except Exception as e:
+        print("❌ QA Error:", e)
+        return jsonify({"error": f"Unable to process question: {str(e)}"}), 500
+
 
 # =========================================
 # Run Flask App
